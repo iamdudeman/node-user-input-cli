@@ -1,0 +1,30 @@
+{
+  "name": "node-user-input-cli",
+  "version": "1.0.0",
+  "description": "A simple library for quickly generating a command line interface for a user",
+  "main": "",
+  "scripts": {
+    "docs": "rm -rf ./docs && node_modules/jsdoc/jsdoc.js ./src/*.js README.md && mv ./out ./docs",
+    "test": "node_modules/mocha/bin/mocha '**/*.test.js'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iamdudeman/node-user-input-cli.git"
+  },
+  "keywords": [
+    "node",
+    "cli",
+    "JavaScript"
+  ],
+  "author": "Tim Solum",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/iamdudeman/node-user-input-cli/issues"
+  },
+  "homepage": "https://github.com/iamdudeman/node-user-input-cli#readme",
+  "devDependencies": {
+    "eslint": "4.7.2",
+    "jsdoc": "3.5.5",
+    "mocha": "3.5.3"
+  }
+}
