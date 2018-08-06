@@ -29,12 +29,28 @@ class UserInputLoop {
     }
   }
 
+
+
+  thing() {
+    userInputUtils.promptUserInput(this.actionPromptText)
+      .then(input => {
+        let isChoiceHandled = userInputUtils.handleChoice(input, this.consoleActions);
+
+        if (!isChoiceHandled) {
+          // TODO handle choice not handled
+        }
+
+        this.thing();
+      });
+  }
+
   start() {
     this.addQuitIfNotExist();
     this.addHelpIfNotExist();
 
-    userInputUtils.promptUserInput(this.actionPromptText)
-      .then(input => userInputUtils.handleChoice(input, this.consoleActions, this.actionPromptText));
+    this.thing();
+    // userInputUtils.promptUserInput(this.actionPromptText)
+    //   .then(input => userInputUtils.handleChoice(input, this.consoleActions, this.actionPromptText));
   }
 }
 

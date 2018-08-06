@@ -5,11 +5,20 @@ const readline = require('readline');
 const userInputUtils = require('./userInputUtils');
 
 describe('userInputUtils', () => {
+  let sandbox;
+
+  beforeEach(() => {
+    sandbox = sinon.createSandbox();
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
   describe('promptUserInput', () => {
-    let sandbox, mockReadLine, expectedChoice;
+    let mockReadLine, expectedChoice;
 
     beforeEach(() => {
-      sandbox = sinon.createSandbox();
       mockReadLine = {
         question: (question, callback) => {
           callback(expectedChoice);
@@ -18,10 +27,6 @@ describe('userInputUtils', () => {
       };
 
       sandbox.stub(readline, 'createInterface').returns(mockReadLine);
-    });
-
-    afterEach(() => {
-      sandbox.restore();
     });
 
     it('should resolve with the user\'s choice', () => {
@@ -38,6 +43,28 @@ describe('userInputUtils', () => {
   });
 
   describe('handleChoice', () => {
-    it('todo test');
+    it('should call action if can process input', () => {
+      let action = {
+        id: 'test',
+        callAction: sandbox.stub()
+      };
+
+      userInputUtils.handleChoice('test', [action]);
+
+      assert.ok(action.callAction.called);
+    });
+
+    it('should return true if input was handled', () => {
+      let action = {
+        id: 'test',
+        callAction: sandbox.stub()
+      };
+
+      assert.ok(userInputUtils.handleChoice('test', [action]));
+    });
+
+    it('should return false if process was not handled', () => {
+      assert.notOk(userInputUtils.handleChoice('test', []));
+    });
   });
 });

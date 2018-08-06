@@ -20,18 +20,24 @@ function promptUserInput(question) {
   });
 }
 
-function handleChoice(input, consoleActions, actionPromptText) {
+/**
+ * Handles the choice of the user using an array of ConsoleActions. Returns whether or not
+ * a ConsoleAction properly handled the input or not.
+ *
+ * @param {string} input - The user's inut
+ * @param {Array<ConsoleAction>} consoleActions - All the ConsoleActions that can possibly handle the choice
+ * @returns {bool} True if choice has been handled by a ConsoleAction
+ */
+function handleChoice(input, consoleActions) {
   const parts = input.split(' ');
   const choice = parts[0];
   const action = consoleActions.find(action => action.id === choice);
 
   if (action) {
     action.callAction(...parts.filter(part => part !== choice));
-  } else {
-    console.log('"help" for help');
   }
 
-  return promptUserInput(actionPromptText).then(input => handleChoice(input, consoleActions, actionPromptText));
+  return !!action;
 }
 
 module.exports = {
