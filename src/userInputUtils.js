@@ -1,5 +1,11 @@
 const readline = require('readline');
 
+/**
+ * Ask the user a question and wait for response.
+ *
+ * @param {string} question - The question to ask the user
+ * @returns {Promise<string>} Resolves with the string the user entered
+ */
 function promptUserInput(question) {
   const rl = readline.createInterface({
     input: process.stdin,
