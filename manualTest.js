@@ -1,11 +1,13 @@
-const UserInputLoop = require('./src/UserInputLoop');
+const UserInputLoopBuilder = require('./src/UserInputLoopBuilder');
 
-let loop = new UserInputLoop();
-
-loop.addConsoleAction(
-  'test',
-  'test action',
-  () => console.log('testaroo')
-);
-
-loop.start();
+new UserInputLoopBuilder()
+  .addConsoleAction(
+    'test',
+    'test action',
+    () => console.log('testaroo')
+  )
+  .setActionPromptChoice('Action: ')
+  .setHelpId()
+  .setQuitActionId('quit')
+  .setChoiceNotHandledCallback(() => console.log('choice not handled'))
+  .start();
