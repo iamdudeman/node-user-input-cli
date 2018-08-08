@@ -1,12 +1,26 @@
 const ConsoleAction = require('./ConsoleAction');
 const userInputUtils = require('./userInputUtils');
 
+/**
+ * Builder used to customize a user input loop before starting it.
+ */
 class UserInputLoopBuilder {
+  /**
+   * Inialize a builder instance.
+   */
   constructor() {
-    this.consoleActions = [];
+    this.actionPromptText = 'Action: ';
     this.choiceNotHandledCallback = () => {};
+    this.consoleActions = [];
   }
 
+  /**
+   * Adds a ConsoleAction that can be executed by a user.
+   *
+   * @param {string} id - The id of the console action
+   * @param {string} helpText - The help text for the action
+   * @param {function} action - The action
+   */
   addConsoleAction(id, helpText, action) {
     if (this.consoleActions.some(action => action.getId() == id)) {
       throw Error('Cannot reuse Action id ' + id);
@@ -16,17 +30,20 @@ class UserInputLoopBuilder {
     return this;
   }
 
-  setActionPromptChoice(actionPromptText) {
-    this.actionPromptText = actionPromptText;
-    return this;
+  /**
+   * Adds an action that will end the program.
+   *
+   * @param {string=quit} id - The id for the quit action
+   * @param {string=ends the program} helpText - The help text for the quit action
+   */
+  addQuitAction(id = 'quit', helpText = 'ends the program') {
+    this.hasQuitAction = true;
+    return this.addConsoleAction(id, helpText, () => process.exit());
   }
 
-  setChoiceNotHandledCallback(choiceNotHandledCallback) {
-    this.choiceNotHandledCallback = choiceNotHandledCallback;
-    return this;
-  }
-
-  setHelpId() {
+  // TODO figure this out
+  addHelpAction() {
+    this.hasHelpAction = true;
     return this.addConsoleAction('help', '', () => {
       this.consoleActions.forEach(action => {
         if (action.getId() != 'help') {
@@ -36,11 +53,33 @@ class UserInputLoopBuilder {
     });
   }
 
-  setQuitActionId(id, helpText = 'ends the program') {
-    return this.addConsoleAction(id, helpText, () => process.exit());
+  setActionPromptChoice(actionPromptText) {
+    if (typeof actionPromptText != 'string') {
+      throw Error('action prompt choice must be a string');
+    }
+
+    this.actionPromptText = actionPromptText;
+    return this;
+  }
+
+  setChoiceNotHandledCallback(choiceNotHandledCallback) {
+    if (typeof choiceNotHandledCallback != 'function') {
+      throw Error('choice not handled callback must be a function');
+    }
+
+    this.choiceNotHandledCallback = choiceNotHandledCallback;
+    return this;
   }
 
   start() {
+    if (!this.hasHelpAction) {
+      throw Error('must have a help action');
+    }
+
+    if (!this.hasQuitAction) {
+      throw Error('must have a quit action');
+    }
+
     userInputUtils.promptUserInput(this.actionPromptText)
       .then(input => {
         let isChoiceHandled = userInputUtils.handleChoice(input, this.consoleActions);
