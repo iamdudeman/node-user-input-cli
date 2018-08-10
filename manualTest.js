@@ -8,6 +8,6 @@ new UserInputLoopBuilder()
     'test action',
     () => console.log('testaroo')
   )
-  .setActionPromptChoice('Action: ')
+  .setActionPromptText('Action: ')
   .setChoiceNotHandledCallback(() => console.log('choice not handled'))
   .start();
