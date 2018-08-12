@@ -4,9 +4,9 @@
   "description": "A simple library for quickly generating a command line interface for a user",
   "main": "",
   "scripts": {
-    "docs": "rm -rf ./docs && node_modules/jsdoc/jsdoc.js ./src/*.js README.md && mv ./out ./docs",
+    "docs": "rm -rf ./docs && jsdoc ./src README.md && mv ./out ./docs",
     "lint": "eslint . --ext .js",
-    "test": "node_modules/mocha/bin/mocha '**/*.test.js'"
+    "test": "mocha **/*.test.js"
   },
   "repository": {
     "type": "git",

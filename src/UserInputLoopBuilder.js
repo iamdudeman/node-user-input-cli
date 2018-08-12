@@ -33,18 +33,6 @@ class UserInputLoopBuilder {
     return this;
   }
 
-  /**
-   * Adds an action that will end the program.
-   *
-   * @param {string} [id=quit] - The id for the quit action
-   * @param {string} [helpText=ends the program] - The help text for the quit action
-   * @return {UserInputLoopBuilder} The builder
-   */
-  addQuitAction(id = 'quit', helpText = 'ends the program') {
-    this.hasQuitAction = true;
-    return this.addConsoleAction(id, helpText, () => process.exit());
-  }
-
   // TODO figure out this implementation and test
   addHelpAction() {
     this.hasHelpAction = true;
@@ -55,6 +43,18 @@ class UserInputLoopBuilder {
         }
       });
     });
+  }
+
+  /**
+   * Adds an action that will end the program.
+   *
+   * @param {string} [id=quit] - The id for the quit action
+   * @param {string} [helpText=ends the program] - The help text for the quit action
+   * @return {UserInputLoopBuilder} The builder
+   */
+  addQuitAction(id = 'quit', helpText = 'ends the program') {
+    this.hasQuitAction = true;
+    return this.addConsoleAction(id, helpText, process.exit);
   }
 
   /**
@@ -87,7 +87,25 @@ class UserInputLoopBuilder {
     return this;
   }
 
-  // TODO test
+  /**
+   * Processes the user's input by handling their choice by registered actions or by the choice not handled callback.
+   *
+   * @param {string} input - The user's input
+   */
+  processInput(input) {
+    let isChoiceHandled = userInputUtils.handleChoice(input, this.consoleActions);
+
+    if (!isChoiceHandled) {
+      this.choiceNotHandledCallback && this.choiceNotHandledCallback();
+    }
+
+    // Recursive so it loops
+    this.start();
+  }
+
+  /**
+   * Starts the user input loop.
+   */
   start() {
     if (!this.hasHelpAction) {
       throw Error('must have a help action');
@@ -97,17 +115,7 @@ class UserInputLoopBuilder {
       throw Error('must have a quit action');
     }
 
-    userInputUtils.promptUserInput(this.actionPromptText)
-      .then(input => {
-        let isChoiceHandled = userInputUtils.handleChoice(input, this.consoleActions);
-
-        if (!isChoiceHandled) {
-          this.choiceNotHandledCallback && this.choiceNotHandledCallback();
-        }
-
-        // Recursive so it loops
-        this.start();
-      });
+    return userInputUtils.promptUserInput(this.actionPromptText).then(this.processInput);
   }
 }
 
