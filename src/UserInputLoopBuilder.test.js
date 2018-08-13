@@ -6,6 +6,11 @@ const UserInputLoopBuilder = require('./UserInputLoopBuilder');
 
 describe('UserInputLoopBuilder', () => {
   let sandbox = sinon.createSandbox();
+  let builder;
+
+  beforeEach(() => {
+    builder = new UserInputLoopBuilder();
+  });
 
   afterEach(() => {
     sandbox.restore();
@@ -13,54 +18,115 @@ describe('UserInputLoopBuilder', () => {
 
   describe('addConsoleAction', () => {
     it('should throw error if id is already added', () => {
-      assert.throws(() => new UserInputLoopBuilder()
-        .addConsoleAction('test')
-        .addConsoleAction('test'), Error);
+      assert.throws(() => builder.addConsoleAction('test').addConsoleAction('test'), Error);
     });
 
     it('should add the console action', () => {
       let expectedId = 'test';
       let expectedHelp = 'help';
       let expectedAction = sandbox.stub();
-      let builder = new UserInputLoopBuilder()
-        .addConsoleAction(expectedId, expectedHelp, expectedAction);
+
+      builder.addConsoleAction(expectedId, expectedHelp, expectedAction);
 
       builder.consoleActions[0].callAction();
 
       assert.ok(expectedAction.called);
       assert.equal(builder.consoleActions[0].getId(), expectedId);
       assert.equal(builder.consoleActions[0].getHelpText(), expectedHelp);
-
     });
 
     it('should return the builder', () => {
-      let builder = new UserInputLoopBuilder();
-
       assert.equal(builder.addConsoleAction(), builder);
     });
   });
 
   describe('addHelpAction', () => {
-    it('todo implement and test');
+    it('should add the help action', () => {
+      sandbox.stub(builder, 'addConsoleAction');
+
+      builder.addHelpAction();
+      assert.ok(builder.addConsoleAction.calledWith('help', ''));
+    });
+
+    it('should throw error if help action already added', () => {
+      assert.throws(() => builder.addHelpAction().addHelpAction(), Error);
+    });
+
+    it('should be able to change help id', ()  => {
+      const expectedId = 'testId';
+
+      sandbox.stub(builder, 'addConsoleAction');
+
+      builder.addHelpAction(expectedId);
+      assert.ok(builder.addConsoleAction.calledWith(expectedId, ''));
+    });
+
+    it('should not console log help for help action', () => {
+      sandbox.stub(builder, 'addConsoleAction');
+      sandbox.stub(console, 'log');
+
+      builder.addHelpAction();
+      builder.addConsoleAction.args[0][2]();
+
+      assert.notOk(console.log.called);
+    });
+
+    it('should console log help for actions when called', () => {
+      sandbox.stub(builder, 'addConsoleAction');
+      sandbox.stub(console, 'log');
+
+      builder.consoleActions = [{
+        getId: () => 'test',
+        getHelpText: () => 'test2'
+      }];
+      builder.addHelpAction();
+      builder.addConsoleAction.args[0][2]();
+
+      assert.ok(console.log.calledWith('test: test2'));
+    });
+
+    it('should be able to change the help format', () => {
+      sandbox.stub(builder, 'addConsoleAction');
+      sandbox.stub(console, 'log');
+
+      builder.consoleActions = [{
+        getId: () => 'test',
+        getHelpText: () => 'test2'
+      }];
+      builder.addHelpAction('help', '[HELP]-[ID]');
+      builder.addConsoleAction.args[0][2]();
+
+      assert.ok(console.log.calledWith('test2-test'));
+    });
+
+    it('should return the builder', () => {
+      assert.equal(builder.addHelpAction(), builder);
+    });
   });
 
   describe('addQuitAction', () => {
     it('should add the quit action', () => {
-      let builder = new UserInputLoopBuilder();
-
       sandbox.stub(builder, 'addConsoleAction');
 
       builder.addQuitAction();
       assert.ok(builder.addConsoleAction.calledWith('quit', 'ends the program', process.exit));
     });
 
-    it('should be able to change quit id');
+    it('should throw error if quit action already added', () => {
+      assert.throws(() => builder.addQuitAction().addQuitAction(), Error);
+    });
 
-    it('should be able to change quit help text');
+    it('should be able to change quit id and help text', ()  => {
+      const expectedId = 'testId';
+      const expectedHelpText = 'testHelp';
+
+      sandbox.stub(builder, 'addConsoleAction');
+
+      builder.addQuitAction(expectedId, expectedHelpText);
+      assert.ok(builder.addConsoleAction.calledWith(expectedId, expectedHelpText, process.exit));
+    });
 
     it('should return the builder', () => {
-      let builder = new UserInputLoopBuilder();
-
       assert.equal(builder.addQuitAction(), builder);
     });
   });
@@ -68,7 +134,6 @@ describe('UserInputLoopBuilder', () => {
   describe('setActionPromptText', () => {
     it('should set the action prompt choice', () => {
       let expectedText = 'test';
-      let builder = new UserInputLoopBuilder();
 
       builder.setActionPromptText(expectedText);
 
@@ -80,8 +145,6 @@ describe('UserInputLoopBuilder', () => {
     });
 
     it('should return the builder', () => {
-      let builder = new UserInputLoopBuilder();
-
       assert.equal(builder.setActionPromptText('test'), builder);
     });
   });
@@ -89,7 +152,6 @@ describe('UserInputLoopBuilder', () => {
   describe('setChoiceNotHandledCallback', () => {
     it('should set the choice not handled callback', () => {
       let expectedCallback = sandbox.stub();
-      let builder = new UserInputLoopBuilder();
 
       builder.setChoiceNotHandledCallback(expectedCallback);
 
@@ -101,37 +163,19 @@ describe('UserInputLoopBuilder', () => {
     });
 
     it('should return the builder', () => {
-      let builder = new UserInputLoopBuilder();
-
       assert.equal(builder.setChoiceNotHandledCallback(() => {}), builder);
     });
   });
 
   describe('processInput', () => {
-    let builder;
-
     beforeEach(() => {
       sandbox.stub(userInputUtils, 'promptUserInput').returns(Promise.resolve());
       sandbox.stub(userInputUtils, 'handleChoice').returns(true);
-
-      builder = new UserInputLoopBuilder();
-
       sandbox.stub(builder, 'start');
 
       builder.hasHelpAction = true;
       builder.hasQuitAction = true;
     });
-
-    /*
-    let isChoiceHandled = userInputUtils.handleChoice(input, this.consoleActions);
-
-    if (!isChoiceHandled) {
-      this.choiceNotHandledCallback && this.choiceNotHandledCallback();
-    }
-
-    // Recursive so it loops
-    this.start();
-    */
 
     it('should handle choice', () => {
       const input = 'test';
@@ -165,14 +209,9 @@ describe('UserInputLoopBuilder', () => {
   });
 
   describe('start', () => {
-    let builder;
-
     beforeEach(() => {
       sandbox.stub(userInputUtils, 'promptUserInput').returns(Promise.resolve());
       sandbox.stub(userInputUtils, 'handleChoice').returns(true);
-
-      builder = new UserInputLoopBuilder();
-
       sandbox.stub(builder, 'processInput');
 
       builder.hasHelpAction = true;

@@ -14,6 +14,8 @@ class UserInputLoopBuilder {
     this.consoleActions = [];
     this.hasHelpAction = false;
     this.hasQuitAction = false;
+
+    this.processInput = this.processInput.bind(this);
   }
 
   /**
@@ -33,13 +35,22 @@ class UserInputLoopBuilder {
     return this;
   }
 
-  // TODO figure out this implementation and test
-  addHelpAction() {
+  /**
+   * Adds a help action that displays all the registered actions and their help text.
+   *
+   * @param {string} id - The id for the help action
+   * @param {string} [helpFormat='[ID]: [HELP]'] - The format for the help text. It uses identifiers for the action id [ID] and help text [HELP]
+   */
+  addHelpAction(id = 'help', helpFormat = '[ID]: [HELP]') {
+    if (this.hasHelpAction) {
+      throw Error('Can only add one quit action');
+    }
+
     this.hasHelpAction = true;
-    return this.addConsoleAction('help', '', () => {
+    return this.addConsoleAction(id, '', () => {
       this.consoleActions.forEach(action => {
-        if (action.getId() != 'help') {
-          console.log(action.getId() + ':', action.getHelpText());
+        if (action.getId() !== id) {
+          console.log(helpFormat.replace('[ID]', action.getId()).replace('[HELP]', action.getHelpText()));
         }
       });
     });
@@ -53,6 +64,10 @@ class UserInputLoopBuilder {
    * @return {UserInputLoopBuilder} The builder
    */
   addQuitAction(id = 'quit', helpText = 'ends the program') {
+    if (this.hasQuitAction) {
+      throw Error('Can only add one quit action');
+    }
+
     this.hasQuitAction = true;
     return this.addConsoleAction(id, helpText, process.exit);
   }
